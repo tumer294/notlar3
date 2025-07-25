@@ -1,7 +1,7 @@
 // Bu dosyayı Google Apps Script editöründe kullanın
 // script.google.com adresine gidin ve yeni bir proje oluşturun
 
-const SPREADSHEET_ID = '1TMuX31dbctN4osdQtBvKDV_i8GTOHFr0dz3P9X1cwRo';
+const SPREADSHEET_ID = '1TMuX31dbctN4osdQtBvKDV_i8GTOHFr0dz3P9X1cwRo'; // Bu ID'yi kendi Google Sheets belgenizin ID'si ile değiştirin
 const SHEET_NAME = 'notlar';
 
 function doGet(e) {
@@ -10,30 +10,57 @@ function doGet(e) {
   try {
     switch (action) {
       case 'getAllNotes':
+        const notes = getAllNotes();
         return ContentService
-          .createTextOutput(JSON.stringify({ notes: getAllNotes() }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .createTextOutput(JSON.stringify({ notes: notes }))
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       case 'testConnection':
         return ContentService
           .createTextOutput(JSON.stringify({ success: true }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       case null:
       case undefined:
         return ContentService
           .createTextOutput(JSON.stringify({ error: 'No action parameter provided' }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       default:
         return ContentService
           .createTextOutput(JSON.stringify({ error: 'Invalid action' }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
     }
   } catch (error) {
+    console.error('doGet error:', error);
     return ContentService
-      .createTextOutput(JSON.stringify({ error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .createTextOutput(JSON.stringify({ error: error.toString(), stack: error.stack }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   }
 }
 
@@ -47,42 +74,81 @@ function doPost(e) {
         const addResult = addNote(data.note);
         return ContentService
           .createTextOutput(JSON.stringify({ success: addResult }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       case 'updateNote':
         const updateResult = updateNote(data.noteId, data.note);
         return ContentService
           .createTextOutput(JSON.stringify({ success: updateResult }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       case 'deleteNote':
         const deleteResult = deleteNote(data.noteId);
         return ContentService
           .createTextOutput(JSON.stringify({ success: deleteResult }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       case 'initializeSheet':
         const initResult = initializeSheet();
         return ContentService
           .createTextOutput(JSON.stringify({ success: initResult }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
       
       default:
         return ContentService
           .createTextOutput(JSON.stringify({ error: 'Invalid action' }))
-          .setMimeType(ContentService.MimeType.JSON);
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          });
     }
   } catch (error) {
+    console.error('doPost error:', error);
     return ContentService
-      .createTextOutput(JSON.stringify({ error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+      .createTextOutput(JSON.stringify({ error: error.toString(), stack: error.stack }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
   }
 }
 
 function getAllNotes() {
   try {
+    console.log('Getting all notes from spreadsheet:', SPREADSHEET_ID);
     const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+    
+    if (!sheet) {
+      console.error('Sheet not found:', SHEET_NAME);
+      throw new Error(`Sheet '${SHEET_NAME}' not found`);
+    }
+    
     const data = sheet.getDataRange().getValues();
+    console.log('Data retrieved, rows:', data.length);
     
     if (data.length <= 1) {
       return [];
