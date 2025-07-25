@@ -5,7 +5,7 @@ const SPREADSHEET_ID = '1TMuX31dbctN4osdQtBvKDV_i8GTOHFr0dz3P9X1cwRo';
 const SHEET_NAME = 'notlar';
 
 function doGet(e) {
-  const action = e.parameter.action;
+  const action = e && e.parameter ? e.parameter.action : null;
   
   try {
     switch (action) {
@@ -17,6 +17,12 @@ function doGet(e) {
       case 'testConnection':
         return ContentService
           .createTextOutput(JSON.stringify({ success: true }))
+          .setMimeType(ContentService.MimeType.JSON);
+      
+      case null:
+      case undefined:
+        return ContentService
+          .createTextOutput(JSON.stringify({ error: 'No action parameter provided' }))
           .setMimeType(ContentService.MimeType.JSON);
       
       default:
@@ -33,7 +39,7 @@ function doGet(e) {
 
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
+    const data = e && e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};
     const action = data.action;
     
     switch (action) {
